@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     supabase
       .from('trips')
-      .select('id, title, store, planned_for, status, owner_id, created_at, profiles(name)')
+      .select('id, title, store, planned_for, status, owner_id, created_at, profiles!trips_owner_id_fkey(name)')
       .order('created_at', { ascending: false })
       .then(({ data, error: e }) => {
         setError(e?.message || '');
