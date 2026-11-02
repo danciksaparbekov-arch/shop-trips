@@ -3,7 +3,8 @@ import { useAuth } from '../auth';
 
 // Ввод имени: первый заход и переименование
 export default function NameForm({ initial = '', submitLabel, onDone }) {
-  const { saveName } = useAuth();
+  const { saveName, login, userId } = useAuth();
+  const submitName = userId ? saveName : login; // без аккаунта — вход по имени, с аккаунтом — переименование
   const [name, setName] = useState(initial);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -13,7 +14,7 @@ export default function NameForm({ initial = '', submitLabel, onDone }) {
     setError('');
     setBusy(true);
     try {
-      await saveName(name);
+      await submitName(name);
       onDone?.();
     } catch (err) {
       setError(err.message || String(err));

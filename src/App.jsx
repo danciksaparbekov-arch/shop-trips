@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth';
 import NameForm from './components/NameForm';
+import InstallButton from './components/InstallButton';
 import Home from './pages/Home';
 import NewTrip from './pages/NewTrip';
 import Join from './pages/Join';
 import Trip from './pages/Trip';
 
 export default function App() {
-  const { ready, error, profile, reset } = useAuth();
+  const { ready, error, profile, notice, anonymous, userId, reset, logout } = useAuth();
   const [renaming, setRenaming] = useState(false);
 
   if (!ready) return <div className="center">Загрузка…</div>;
@@ -23,13 +24,15 @@ export default function App() {
     );
   }
 
-  // первый заход: сначала имя (адрес в строке сохраняется — после имени откроется нужный поход)
-  if (!profile) {
+  // вход по имени (адрес в строке сохраняется — после входа откроется нужный поход)
+  if (!userId || !profile) {
     return (
       <div className="card narrow center-card">
         <h1>Сходим в магазин?</h1>
-        <p className="muted">Как вас зовут? Имя увидят коллеги в общем списке.</p>
-        <NameForm submitLabel="Продолжить" />
+        <p className="muted">
+          Как вас зовут? Имя увидят коллеги в общем списке. С другого устройства введите то же имя — и попадёте в тот же аккаунт.
+        </p>
+        <NameForm submitLabel="Войти" />
       </div>
     );
   }
@@ -39,11 +42,14 @@ export default function App() {
       <header className="topbar">
         <Link to="/" className="brand">🛒 Сходим в магазин?</Link>
         <span className="who">
+          <InstallButton />
           {profile.name}
-          <button className="link" onClick={() => setRenaming((r) => !r)}>сменить имя</button>
+          {anonymous && <button className="link" onClick={() => setRenaming((r) => !r)}>сменить имя</button>}
+          <button className="link" onClick={logout}>выйти</button>
         </span>
       </header>
       <main>
+        {notice && <p className="warn card">{notice}</p>}
         {renaming && (
           <div className="card narrow">
             <NameForm initial={profile.name} submitLabel="Сохранить" onDone={() => setRenaming(false)} />
