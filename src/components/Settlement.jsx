@@ -14,6 +14,8 @@ export default function Settlement({ trip, members, items, userId, isOwner, onCh
   const me = members.find((m) => m.user_id === userId);
   const ownerName = members.find((m) => m.user_id === trip.owner_id)?.profiles?.name || 'покупателю';
   const mySum = sums[userId] || 0;
+  const myItems = items.filter((i) => i.user_id === userId);
+  const myUnpriced = myItems.filter((i) => !i.missing && i.price == null).length;
 
   async function togglePaid(m) {
     setError('');
@@ -38,14 +40,21 @@ export default function Settlement({ trip, members, items, userId, isOwner, onCh
       {/* что платить мне */}
       {!isOwner && me && (
         <div className="my-pay">
-          {mySum === 0 && <p className="muted">По вашим позициям пока нет суммы к оплате.</p>}
           {mySum > 0 && me.paid && <p className="ok"><b>Оплачено: {money(mySum)}</b></p>}
-          {mySum > 0 && !me.paid && (
+          {!me.paid && (
             <>
-              <p className="pay-sum">Вам нужно перевести {ownerName}: <b>{money(mySum)}</b></p>
-              {trip.qr_path
+              {mySum > 0
+                ? <p className="pay-sum">Вам нужно перевести {ownerName}: <b>{money(mySum)}</b></p>
+                : <p className="muted">
+                    {myItems.length === 0
+                      ? 'У вас нет позиций в этом походе.'
+                      : myUnpriced > 0
+                        ? `${ownerName} ещё не указал(а) цены ваших позиций — сумма появится после этого.`
+                        : 'По вашим позициям нет суммы к оплате.'}
+                  </p>}
+              {myItems.length > 0 && (trip.qr_path
                 ? <SignedImage path={trip.qr_path} alt="QR для оплаты" className="qr" />
-                : <p className="muted small">QR пока не прикреплён.</p>}
+                : <p className="muted small">QR пока не прикреплён.</p>)}
             </>
           )}
         </div>

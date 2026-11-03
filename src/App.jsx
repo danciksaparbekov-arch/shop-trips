@@ -59,6 +59,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/new" element={<NewTrip />} />
           <Route path="/join/:token" element={<Join />} />
+          <Route path="/o/:id" element={<Join />} />
           <Route path="/t/:id" element={<Trip />} />
           <Route path="*" element={<Home />} />
         </Routes>
