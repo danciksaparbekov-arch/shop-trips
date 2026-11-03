@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import NewTrip from './pages/NewTrip';
 import Join from './pages/Join';
 import Trip from './pages/Trip';
+import Profile from './pages/Profile';
 
 export default function App() {
   const { ready, error, profile, notice, anonymous, userId, reset, logout } = useAuth();
@@ -43,7 +44,7 @@ export default function App() {
         <Link to="/" className="brand">🛒 Сходим в магазин?</Link>
         <span className="who">
           <InstallButton />
-          {profile.name}
+          <Link to="/profile" className="link">{profile.name}</Link>
           {anonymous && <button className="link" onClick={() => setRenaming((r) => !r)}>сменить имя</button>}
           <button className="link" onClick={logout}>выйти</button>
         </span>
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/new" element={<NewTrip />} />
           <Route path="/join/:token" element={<Join />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/o/:id" element={<Join />} />
           <Route path="/t/:id" element={<Trip />} />
           <Route path="*" element={<Home />} />

@@ -89,6 +89,8 @@ main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
 .btn.small { padding: 4px 12px; border-radius: 10px; font-size: 14px; }
 .link { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; padding: 0 4px; }
 .link:hover { color: var(--text); }
+a.link { text-decoration: none; }
+.who a.link { color: var(--lavender); font-weight: 600; }
 input {
   background: var(--field); color: var(--text); border: 1px solid var(--line);
   border-radius: 12px; padding: 9px 12px; font: inherit; max-width: 100%;

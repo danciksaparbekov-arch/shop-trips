@@ -9,6 +9,7 @@
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   name text not null check (char_length(btrim(name)) between 1 and 40),
+  qr_path text,                                                                   -- сохранённый QR для оплаты (личная папка в хранилище)
   created_at timestamptz not null default now()
 );
 
@@ -249,7 +250,7 @@ create policy "prices delete own" on public.product_prices for delete to authent
 revoke all on public.profiles, public.trips, public.trip_members, public.items, public.product_prices from anon, authenticated;
 
 grant select, insert on public.profiles to authenticated;
-grant update (name) on public.profiles to authenticated;
+grant update (name, qr_path) on public.profiles to authenticated;
 grant select, delete on public.trips to authenticated;
 grant update (title, store, planned_for, status, receipt_path, qr_path, receipt_total) on public.trips to authenticated;
 grant select on public.trip_members to authenticated;
@@ -276,3 +277,11 @@ create policy "trip files insert" on storage.objects for insert to authenticated
   with check (bucket_id = 'trip-files' and public.is_trip_owner(public.storage_trip_id(name)));
 create policy "trip files delete" on storage.objects for delete to authenticated
   using (bucket_id = 'trip-files' and public.is_trip_owner(public.storage_trip_id(name)));
+
+-- личная папка «<user_id>/»: сохранённый в профиле QR для оплаты (видит и меняет только сам человек)
+create policy "own files read" on storage.objects for select to authenticated
+  using (bucket_id = 'trip-files' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "own files insert" on storage.objects for insert to authenticated
+  with check (bucket_id = 'trip-files' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "own files delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'trip-files' and (storage.foldername(name))[1] = auth.uid()::text);

@@ -9,7 +9,7 @@ const NO_CONFIRM_HINT = 'Вход по имени не настроен: в Supa
 const NAME_TAKEN = 'Это имя уже занято другим аккаунтом';
 
 const fetchProfile = async (userId) =>
-  must(await supabase.from('profiles').select('id, name').eq('id', userId).maybeSingle());
+  must(await supabase.from('profiles').select('id, name, qr_path').eq('id', userId).maybeSingle());
 
 // Старые анонимные аккаунты превращаем в постоянные «по имени» — id и все данные сохраняются.
 // Возвращает { notice } при неудаче и { dropped: true }, если пустой аккаунт заменён входом по имени.
@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
     let profile = await fetchProfile(userId);
     if (!profile) {
       must(await supabase.from('profiles').insert({ id: userId, name: clean }));
-      profile = { id: userId, name: clean };
+      profile = { id: userId, name: clean, qr_path: null };
     }
     setState({ ready: true, userId, profile, anonymous: false, notice: '', error: '' });
   }, []);
@@ -94,8 +94,11 @@ export function AuthProvider({ children }) {
     // после смены имени снова пробуем сделать аккаунт постоянным
     const r = await upgradeAnonymous(state.userId, clean);
     if (r.dropped) { window.location.reload(); return; }
-    setState((s) => ({ ...s, profile: { id: s.userId, name: clean }, anonymous: !!r.notice, notice: r.notice || '' }));
+    setState((s) => ({ ...s, profile: { ...s.profile, id: s.userId, name: clean }, anonymous: !!r.notice, notice: r.notice || '' }));
   }, [state.profile, state.userId]);
+
+  // Обновить поля профиля в состоянии после записи в базу (например, qr_path)
+  const patchProfile = useCallback((patch) => setState((s) => ({ ...s, profile: { ...s.profile, ...patch } })), []);
 
   // Выйти (например, на чужом устройстве)
   const logout = useCallback(async () => {
@@ -103,5 +106,5 @@ export function AuthProvider({ children }) {
     window.location.reload();
   }, []);
 
-  return <Ctx.Provider value={{ ...state, login, saveName, logout, reset: logout }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ ...state, login, saveName, patchProfile, logout, reset: logout }}>{children}</Ctx.Provider>;
 }

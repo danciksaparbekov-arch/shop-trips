@@ -34,6 +34,14 @@ export async function uploadTripFile(tripId, file) {
   return path;
 }
 
+// Копирует файл внутри хранилища (например, сохранённый QR из профиля в папку похода), возвращает новый путь
+export async function copyToTrip(tripId, fromPath) {
+  const path = `${tripId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from(BUCKET).copy(fromPath, path);
+  if (error) throw error;
+  return path;
+}
+
 export async function removeFiles(paths) {
   const list = paths.filter(Boolean);
   if (list.length) await supabase.storage.from(BUCKET).remove(list);
