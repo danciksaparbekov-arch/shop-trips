@@ -52,13 +52,22 @@ export default function Settlement({ trip, members, items, userId, isOwner, onCh
                         ? `${ownerName} ещё не указал(а) цены ваших позиций — сумма появится после этого.`
                         : 'По вашим позициям нет суммы к оплате.'}
                   </p>}
-              {myItems.length > 0 && (trip.qr_path
-                ? <SignedImage path={trip.qr_path} alt="QR для оплаты" className="qr" />
-                : <p className="muted small">QR пока не прикреплён.</p>)}
             </>
           )}
         </div>
       )}
+
+      {/* QR виден всем участникам похода, в том числе после завершения */}
+      <div className="qr-pay">
+        <b>QR для оплаты</b>
+        {trip.qr_path
+          ? <SignedImage path={trip.qr_path} alt="QR для оплаты" className="qr" />
+          : <p className="muted small">
+              {isOwner
+                ? 'QR не прикреплён. Нажмите «Вернуть в работу» и прикрепите его в блоке «Цены и чек».'
+                : `${ownerName} пока не прикрепил(а) QR.`}
+            </p>}
+      </div>
 
       <ul className="debts">
         {members.map((m) => {
